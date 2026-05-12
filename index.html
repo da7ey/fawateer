@@ -2100,6 +2100,38 @@
         }
 
         function filterCustomers() { renderCustomers(); }
+
+function editCustomer(id) {
+    const c = customers.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('customerId').value = c.id;
+    document.getElementById('custName').value = c.name;
+    document.getElementById('custType').value = c.type;
+    document.getElementById('custPhone').value = c.phone;
+    document.getElementById('custEmail').value = c.email || '';
+    document.getElementById('custAddress').value = c.address || '';
+    document.getElementById('custStatus').value = c.status;
+    document.getElementById('custRevenue').value = c.revenue || 0;
+    document.getElementById('custNotes').value = c.notes || '';
+    openModal('customerModal');
+}
+
+function deleteCustomer(id) {
+    if (!confirm('هل أنت متأكد من حذف هذا العميل؟')) return;
+    const customer = customers.find(c => c.id === id);
+    if (!customer) return;
+    const hasProjects = projects.some(p => p.customer === customer.name);
+    if (hasProjects) {
+        showToast('لا يمكن حذف العميل لأنه لديه مشاريع مرتبطة', 'error');
+        return;
+    }
+    customers = customers.filter(c => c.id !== id);
+    saveData();
+    renderCustomers();
+    updateDashboard();
+    showToast('تم حذف العميل');
+}
+
         // ===== ACTIVITIES =====
         // Bulletproof activities initialization
         let activities;
