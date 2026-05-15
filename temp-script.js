@@ -14,6 +14,7 @@
         const DEFAULT_PASSWORD = "1234";
 
                 // ===== JSONBIN.IO CONFIG =====
+        // ===== JSONBIN.IO CONFIG =====
         const JSONBIN_CONFIG = {
             BIN_ID: '6a048d67250b1311c3451574',
             MASTER_KEY: '$2a$10$tE/65huQFZWXDVgT0huaWOSJtoMl.xpy.NVSm5drUjaN1YAoaRNrqy'
