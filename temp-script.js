@@ -4055,40 +4055,49 @@ function deleteCustomer(id) {
             renderAttachments();
         }
 
-        // ===== BACKUP TO CLOUD =====
-async function performAutoBackup() {
-    showLoading();
-    try {
-        const saved = await saveToJSONBin();
-        
-        if (saved) {
-            // Optional: Download local copy as well
-            const data = {
-                customers, projects, expenses, services, 
-                commitments, quotations, activities,
-                exportDate: new Date().toISOString(),
-                version: '3.0'
-            };
-            const json = JSON.stringify(data, null, 2);
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `new_soul_backup_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
+// ===== BACKUP TO CLOUD (JSONBin) =====
+        async function performAutoBackup() {
+            showLoading();
+            try {
+                // حفظ على السحابة
+                const savedToCloud = await saveToJSONBin();
+                
+                // تحميل نسخة محلية احتياطية
+                const data = {
+                    customers: customers,
+                    projects: projects,
+                    expenses: expenses,
+                    services: services,
+                    commitments: commitments,
+                    quotations: quotations,
+                    activities: activities,
+                    exportDate: new Date().toISOString(),
+                    version: '3.0'
+                };
 
-            showToast('✅ تم الحفظ على السحابة + تحميل نسخة محلية', 'success');
-        } else {
-            showToast('❌ فشل الحفظ على السحابة، جاري الحفظ المحلي فقط', 'error');
-        }
-    } catch (e) {
-        console.error(e);
-        showToast('حدث خطأ أثناء النسخ الاحتياطي', 'error');
-    } finally {
-        hideLoading();
-    }
-}
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `new_soul_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                if (savedToCloud) {
+                    showToast('✅ تم الحفظ بنجاح على السحابة + نسخة محلية', 'success');
+                } else {
+                    showToast('⚠️ تم تحميل النسخة المحلية فقط (السحابة فيها مشكلة)', 'warning');
+                }
+
+            } catch (e) {
+                console.error('Backup error:', e);
+                showToast('❌ حدث خطأ أثناء النسخ الاحتياطي', 'error');
+            } finally {
+                hideLoading();
+            }
         }
 
         // Schedule weekly backup
