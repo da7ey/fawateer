@@ -4055,16 +4055,21 @@ function deleteCustomer(id) {
             renderAttachments();
         }
 
-        // ===== AUTO BACKUP =====
-        function performAutoBackup() {
+        // ===== BACKUP TO CLOUD =====
+async function performAutoBackup() {
+    showLoading();
+    try {
+        const saved = await saveToJSONBin();
+        
+        if (saved) {
+            // Optional: Download local copy as well
             const data = {
-                customers, projects, expenses, services, commitments, quotations, activities,
+                customers, projects, expenses, services, 
+                commitments, quotations, activities,
                 exportDate: new Date().toISOString(),
                 version: '3.0'
             };
             const json = JSON.stringify(data, null, 2);
-
-            // 1. Save to device
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -4073,30 +4078,17 @@ function deleteCustomer(id) {
             a.click();
             URL.revokeObjectURL(url);
 
-            // 2. Send email notification
-            const emailSubject = encodeURIComponent(`نسخة احتياطية — New Soul Advertising — ${new Date().toLocaleDateString('ar-EG')}`);
-            const emailBody = encodeURIComponent(
-                `مرحباً،
-
-` +
-                `تم إنشاء نسخة احتياطية تلقائية للنظام.
-` +
-                `التاريخ: ${new Date().toLocaleString('ar-EG')}
-` +
-                `العملاء: ${customers.length}
-` +
-                `المشاريع: ${projects.length}
-` +
-                `المصروفات: ${expenses.length}
-
-` +
-                `يرجى الاحتفاظ بالملف المرفق في مكان آمن.`
-            );
-
-            window.open(`mailto:da7ey@yahoo.com?subject=${emailSubject}&body=${emailBody}`, '_blank');
-
-            localStorage.setItem('ns_last_backup', new Date().toISOString().split('T')[0]);
-            showToast('✅ تم إنشاء نسخة احتياطية وإرسال الإيميل');
+            showToast('✅ تم الحفظ على السحابة + تحميل نسخة محلية', 'success');
+        } else {
+            showToast('❌ فشل الحفظ على السحابة، جاري الحفظ المحلي فقط', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('حدث خطأ أثناء النسخ الاحتياطي', 'error');
+    } finally {
+        hideLoading();
+    }
+}
         }
 
         // Schedule weekly backup
